@@ -1,0 +1,33 @@
+PCA <- function(MAT, num_pc)
+{
+    set.seed(123);
+    require('ade4');
+    if(nrow(MAT) == 0)
+      stop("matrix MAT is empty!!!");
+    if(sum(MAT) == 0)
+      stop("All values in matrix MAT are 0!!!");
+
+    if(num_pc > ncol(MAT))
+    {
+      message("The input number of PCs is larger than the sample size!!!");
+      num_pc = ncol(MAT);
+    }
+    
+    sdv = apply(MAT, 1, sd);
+    MAT = MAT[which(sdv > 0),];
+    
+    normMAT = sapply(1:nrow(MAT), function(x){(MAT[x,] - mean(MAT[x,]))/sd(MAT[x,])});
+    
+    pca_obj = dudi.pca(normMAT, nf = num_pc, scannf = FALSE, center=TRUE, scale=TRUE);
+    
+    normMAT_bg = sapply(1:ncol(normMAT), function(x){normMAT[sample(1:nrow(normMAT)), x]});
+    pca_obj_bg = dudi.pca(normMAT_bg, nf = num_pc, scannf = FALSE, center=TRUE, scale=TRUE);
+    ind = (pca_obj$eig > pca_obj_bg$eig[1]);
+    pcom = NULL;
+    if(sum(ind) >= 2)
+    {
+       pcom = pca_obj$li[,ind];
+    }
+    
+    return(pcom);
+}
