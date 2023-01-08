@@ -1,0 +1,19 @@
+library(ggplot2)
+visualize_tsne <- function(pcom, label, iter, out_dir, file_name)
+{
+   set.seed(123);
+   require("Rtsne");
+   tsne <- Rtsne(pcom, dims = 2, perplexity=30, pca=FALSE, verbose=TRUE, max_iter = iter);
+   saveRDS(tsne, sprintf("./%s/%s", out_dir, file_name));
+   tsne_plot <- data.frame(tSNE_1 = tsne$Y[,1], tSNE_2 = tsne$Y[,2], cell_type = label)
+   
+   tplot = ggplot(tsne_plot) + 
+      geom_point(aes(x=tSNE_1, y=tSNE_2, color=cell_type), size = 2) + 
+      theme(axis.text=element_text(size=14, face="bold"), 
+            axis.title=element_text(size=14,face="bold"), 
+            legend.text = element_text(size=10, face="bold"));
+
+   return(tplot);
+   
+}
+
