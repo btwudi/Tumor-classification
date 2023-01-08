@@ -1,0 +1,34 @@
+library("ggplot2")
+setwd("/vf/users/wud8/TCGA_typical_enhancers/files")
+filenames = list.files(pattern="*.tsv")
+
+MAT = NULL
+cancer_types = NULL
+for(i in seq_along(filenames)) {
+        temp = read.table(sprintf("%s", filenames[i], sep = "\t", header = TRUE))
+        temp = as.matrix(temp)
+        MAT = cbind(MAT, temp)
+        types <- replicate(ncol(temp), unlist(strsplit(filenames[i], "_"))[2])
+        cancer_types = c(cancer_types, types)
+        print(i)
+}       
+
+eRNA_pan_tcga = list();
+eRNA_pan_tcga[[1]]=MAT;
+eRNA_pan_tcga[[2]]=cancer_types
+names(eRNA_pan_tcga) = c("eRNA_expression", "cancer_types");
+saveRDS(eRNA_pan_tcga, "eRNA_pan_tcga.rds")
+
+
+
+obj = readRDS("eRNA_pan_tcga.rds")
+MAT = obj[[1]]
+cancer_types = obj[[2]]
+
+va = apply(MAT, 1, sd);
+MAT = MAT[order(-va)[1:500],];
+pcom = PCA(MAT, 400);
+plot = visualize_tsne(pcom, cancer_types, 1000, "./", "tsne_tumor_classfication");
+pdf("/vf/users/wud8/TCGA_typical_enhancers/files/tsne_tumor_classification_tcga_gbm_lgg.pdf", width=8, height=8)
+plot
+dev.off()
